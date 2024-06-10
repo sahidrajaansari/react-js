@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function App() {
   let [sliderValue, setSliderValue] = useState(0);
+  let [charactersAllowed, setcharacterAllowed] = useState(false);
+  let [numberAllowed, setnumberAllowed] = useState(false);
+  let [uppercaseAllowed, setUppercaseAllowed] = useState(false);
   let [password, setPassword] = useState("");
+  const passwordRef = useRef(null);
 
-  function generatePassword() {
+  const generatePassword = useCallback(() => {
     let length = sliderValue;
     let result = "";
     let characters = "";
@@ -12,33 +16,42 @@ function App() {
     let lowercase = "abcdefghijklmnopqrstuvwxyz";
     let numbers = "0123456789";
     let specialCharacters = "!@#$%^&*()_+";
-
     characters += lowercase;
 
-    if (document.getElementById("uppercase").checked) {
-      characters += uppercase;
-    }
-    if (document.getElementById("Numbers").checked) {
-      characters += numbers;
-    }
-    if (document.getElementById("specialCharacter").checked) {
-      characters += specialCharacters;
-    }
+    if (charactersAllowed) characters += specialCharacters;
+    if (numberAllowed) characters += numbers;
+    if (uppercaseAllowed) characters += uppercase;
 
     for (let i = 0; i < length; i++) {
       result += characters.charAt(
         Math.floor(Math.random() * characters.length)
       );
     }
-
     setPassword(result);
-  }
+  }, [
+    sliderValue,
+    charactersAllowed,
+    numberAllowed,
+    uppercaseAllowed,
+    setPassword,
+  ]);
 
-  function sliderValueChange(e) {
-    setSliderValue(e.target.value);
+  useEffect(() => {
     generatePassword();
-  }
+  }, [
+    charactersAllowed,
+    numberAllowed,
+    uppercaseAllowed,
+    length,
+    generatePassword,
+  ]);
 
+  const copyPassword = useCallback(() => {
+    passwordRef.current.select();
+    window.navigator.clipboard.writeText(passwordRef.current.value);
+  }, [passwordRef]);
+
+  
   return (
     <>
       <div
@@ -57,21 +70,28 @@ function App() {
               id="passwordGenerator"
               value={password}
               readOnly
+              ref={passwordRef}
             />
-            <button className="bg-blue-500 px-1 rounded-r-xl py-2 text-white w-[15%] text-center">
+            <button
+              className="bg-blue-500 px-1 rounded-r-xl py-2 text-white w-[15%] text-center"
+              onClick={copyPassword}
+            >
               Copy
             </button>
           </div>
+
           <div className="lg:flex sm:flex-row justify-evenly align-center my-4 text-white">
             <div className="flex justify-center">
               <input
                 type="range"
-                min="0"
+                min="8"
                 max="20"
                 value={sliderValue}
                 className="slider"
                 id="sliderButton"
-                onChange={sliderValueChange}
+                onChange={(e) => {
+                  setSliderValue(e.target.value);
+                }}
               />
               <span className="px-2" id="sliderValue">
                 Length {sliderValue}
@@ -82,9 +102,12 @@ function App() {
               <ul className="px-3 flex justify-center align-center">
                 <input
                   type="checkbox"
+                  defaultChecked={charactersAllowed}
                   name=""
                   id="specialCharacter"
-                  onChange={generatePassword}
+                  onChange={() => {
+                    setcharacterAllowed(!charactersAllowed);
+                  }}
                 />
                 <label className="px-2" htmlFor="specialCharacter">
                   Special Character
@@ -93,9 +116,12 @@ function App() {
               <ul className="px-3 flex justify-center align-center">
                 <input
                   type="checkbox"
+                  defaultChecked={numberAllowed}
                   name=""
                   id="Numbers"
-                  onChange={generatePassword}
+                  onChange={() => {
+                    setnumberAllowed(!numberAllowed);
+                  }}
                 />
                 <label className="px-2" htmlFor="Numbers">
                   Numbers
@@ -104,9 +130,15 @@ function App() {
               <ul className="px-3 flex justify-center align-center">
                 <input
                   type="checkbox"
+                  defaultChecked={uppercaseAllowed}
                   name=""
                   id="uppercase"
-                  onChange={generatePassword}
+                  onChange={() => {
+                    // console.log(uppercaseAllowed);
+                    uppercaseAllowed = !uppercaseAllowed;
+                    setUppercaseAllowed(uppercaseAllowed);
+                    console.log(uppercaseAllowed);
+                  }}
                 />
                 <label className="px-2" htmlFor="uppercase">
                   Uppercase
