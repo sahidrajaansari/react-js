@@ -74,7 +74,7 @@ function App() {
                 onChange={sliderValueChange}
               />
               <span className="px-2" id="sliderValue">
-                {sliderValue}
+                Length {sliderValue}
               </span>
             </div>
 
